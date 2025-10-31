@@ -155,17 +155,8 @@ export function MigrationForm({
                 className="mt-1"
               />
             </div>
-            <div>
-              <Label htmlFor="dbaHourCost">Custo/hora DBA (BRL)</Label>
-              <Input
-                id="dbaHourCost"
-                type="number"
-                value={config.dbaHourCost}
-                onChange={(e) => handleConfigChange('dbaHourCost', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-          </div>
+			
+                      </div>
         </CardContent>
       </Card>
 
@@ -207,81 +198,7 @@ export function MigrationForm({
       </Card>
 
       {/* Configuração de Preços */}
-      <Card className="shadow-lg border-0">
-        <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-t-lg">
-          <CardTitle>Preços (ajuste para estimativas mensais)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="iaasVcore">IaaS vCore $/h</Label>
-              <Input
-                id="iaasVcore"
-                type="number"
-                step="0.001"
-                value={pricing.iaasVcoreHour}
-                onChange={(e) => handlePricingChange('iaasVcoreHour', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="iaasStorage">IaaS storage $/GB/mês</Label>
-              <Input
-                id="iaasStorage"
-                type="number"
-                step="0.001"
-                value={pricing.iaasStorageMonth}
-                onChange={(e) => handlePricingChange('iaasStorageMonth', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="paasVcore">PaaS vCore $/h</Label>
-              <Input
-                id="paasVcore"
-                type="number"
-                step="0.001"
-                value={pricing.paasVcoreHour}
-                onChange={(e) => handlePricingChange('paasVcoreHour', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="paasStorage">PaaS storage $/GB/mês</Label>
-              <Input
-                id="paasStorage"
-                type="number"
-                step="0.001"
-                value={pricing.paasStorageMonth}
-                onChange={(e) => handlePricingChange('paasStorageMonth', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="paasHa">PaaS HA multiplier</Label>
-              <Input
-                id="paasHa"
-                type="number"
-                step="0.1"
-                value={pricing.paasHaMultiplier}
-                onChange={(e) => handlePricingChange('paasHaMultiplier', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="saasPerGb">SaaS $/GB/mês</Label>
-              <Input
-                id="saasPerGb"
-                type="number"
-                step="0.001"
-                value={pricing.saasPerGb}
-                onChange={(e) => handlePricingChange('saasPerGb', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 }

@@ -58,10 +58,7 @@ export function DatabaseList({ databases, onImportCsv, onPreview }: DatabaseList
                     <th className="border p-2 text-left">#</th>
                     <th className="border p-2 text-left">Database</th>
                     <th className="border p-2 text-right">Tamanho (GB)</th>
-                    <th className="border p-2 text-right">vCores</th>
-                    <th className="border p-2 text-right">Tempo Migração (h)</th>
-                    <th className="border p-2 text-right">Custo Migração (BRL)</th>
-                    <th className="border p-2 text-right">Custo Mensal</th>
+                                   
                   </tr>
                 </thead>
                 <tbody>
@@ -70,20 +67,14 @@ export function DatabaseList({ databases, onImportCsv, onPreview }: DatabaseList
                       <td className="border p-2 text-center">{index + 1}</td>
                       <td className="border p-2 font-medium">{db.name}</td>
                       <td className="border p-2 text-right">{db.sizeGb}</td>
-                      <td className="border p-2 text-right">{db.vcores}</td>
-                      <td className="border p-2 text-right">{db.migrationHours}</td>
-                      <td className="border p-2 text-right">R$ {db.migrationCost.toFixed(2)}</td>
-                      <td className="border p-2 text-right">{db.monthlyCost.toFixed(2)}</td>
+                             
                     </tr>
                   ))}
                   <tr className="bg-blue-50 font-bold">
                     <td className="border p-2 text-center">-</td>
                     <td className="border p-2">TOTAL</td>
                     <td className="border p-2 text-right">{totalSize}</td>
-                    <td className="border p-2 text-right">-</td>
-                    <td className="border p-2 text-right">{totalMigrationHours}</td>
-                    <td className="border p-2 text-right">R$ {totalMigrationCost.toFixed(2)}</td>
-                    <td className="border p-2 text-right">{totalMonthlyCost.toFixed(2)}</td>
+
                   </tr>
                 </tbody>
               </table>
@@ -99,14 +90,7 @@ export function DatabaseList({ databases, onImportCsv, onPreview }: DatabaseList
                 <div className="text-sm opacity-90">Tamanho Total (GB)</div>
                 <div className="text-2xl font-bold">{totalSize}</div>
               </div>
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4 rounded-lg">
-                <div className="text-sm opacity-90">Custo Migração (BRL)</div>
-                <div className="text-2xl font-bold">R$ {totalMigrationCost.toFixed(0)}</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-lg">
-                <div className="text-sm opacity-90">Custo Mensal</div>
-                <div className="text-2xl font-bold">{totalMonthlyCost.toFixed(0)}</div>
-              </div>
+             
             </div>
           </>
         ) : (

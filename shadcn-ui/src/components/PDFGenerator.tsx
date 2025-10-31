@@ -54,7 +54,7 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
     // Header with gradient background
     addColoredRect(0, 0, pageWidth, 40, primaryBlue);
     
-    // Try to add logo with better quality
+    // Try to add logo
     try {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -62,28 +62,16 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
       await new Promise((resolve) => {
         img.onload = () => {
           try {
-            // Create high-resolution canvas for better quality
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const size = 120; // Higher resolution
-            canvas.width = size;
-            canvas.height = size;
-            
-            // Draw with better quality settings
-            if (ctx) {
-              ctx.imageSmoothingEnabled = true;
-              ctx.imageSmoothingQuality = 'high';
-              ctx.drawImage(img, 0, 0, size, size);
-              
-              const logoData = canvas.toDataURL('image/png', 1.0);
-              doc.addImage(logoData, 'PNG', margin, 8, 30, 30, undefined, 'FAST');
-            }
+            doc.addImage(img, 'PNG', margin, 8, 24, 24, undefined, 'FAST');
           } catch (error) {
-            console.log('Logo loading failed:', error);
+            console.log('Logo loading failed, continuing without logo');
           }
           resolve(true);
         };
-        img.onerror = () => resolve(false);
+        img.onerror = () => {
+          console.log('Logo not found, continuing without logo');
+          resolve(false);
+        };
         img.src = '/assets/logo.png';
         
         // Timeout fallback
@@ -110,7 +98,7 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text('CONFIGURAÇÃO DO SERVIDOR', margin + 5, yPosition + 6);
+    doc.text('CONFIGURAÇÃO DO SERVIDOR | Pré Requisitos', margin + 5, yPosition + 6);
     yPosition += 15;
 
     // Configuration table with alternating colors
@@ -125,8 +113,7 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
       ['Tipo de Ambiente:', config.environment],
       ['Collation da Instância:', config.collation],
       ['Memória da Instância:', config.memory],
-      ['Processadores da Instância:', config.cpu],
-      ['Custo/hora DBA (BRL):', `R$ ${config.dbaHourCost}`]
+      ['Processadores da Instância:', config.cpu]
     ];
 
     configData.forEach(([label, value], index) => {
@@ -162,92 +149,97 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
       yPosition = margin;
     }
 
-    // Database estimates section
-    addColoredRect(margin, yPosition, pageWidth - 2 * margin, 8, orange);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.text('ESTIMATIVAS POR DATABASE', margin + 5, yPosition + 6);
-    yPosition += 15;
+  // Database estimates section (simplified - only size estimates)
+addColoredRect(margin, yPosition, pageWidth - 2 * margin, 8, orange);
+doc.setFontSize(12);
+doc.setFont('helvetica', 'bold');
+doc.setTextColor(255, 255, 255);
+doc.text('ESTIMATIVAS POR DATABASE', margin + 5, yPosition + 6);
+yPosition += 15;
 
-    if (databases.length > 0) {
-      // Table headers with colored background
+if (databases.length > 0) {
+  // Table headers with colored background
+  addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, darkBlue);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+
+  const headers = ['#', 'Database', 'Tamanho (GB)'];
+  const colWidths = [15, 80, 30];
+  let xPos = margin + 2;
+
+  headers.forEach((header, i) => {
+    doc.text(header, xPos, yPosition + 5);
+    xPos += colWidths[i];
+  });
+  yPosition += 12;
+
+  // Table data with alternating row colors
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
+
+  databases.forEach((db, index) => {
+    if (yPosition > pageHeight - 30) {
+      doc.addPage();
+      yPosition = margin;
+
+      // Re-add headers on new page
       addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, darkBlue);
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
-      
-      const headers = ['#', 'Database', 'GB', 'vCores', 'Mig(h)', 'Custo Mig(BRL)', 'Custo Mensal'];
-      const colWidths = [12, 55, 18, 18, 20, 35, 30];
-      let xPos = margin + 2;
 
+      xPos = margin + 2;
       headers.forEach((header, i) => {
         doc.text(header, xPos, yPosition + 5);
         xPos += colWidths[i];
       });
       yPosition += 12;
-
-      // Table data with alternating row colors
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
-      
-      databases.forEach((db, index) => {
-        if (yPosition > pageHeight - 30) {
-          doc.addPage();
-          yPosition = margin;
-        }
-
-        // Alternating row colors
-        if (index % 2 === 0) {
-          addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 8, lightBlue);
-        }
-
-        xPos = margin + 2;
-        const rowData = [
-          (index + 1).toString(),
-          db.name.substring(0, 25),
-          db.sizeGb.toString(),
-          db.vcores.toString(),
-          db.migrationHours.toString(),
-          `R$ ${db.migrationCost.toFixed(2)}`,
-          db.monthlyCost.toFixed(2)
-        ];
-
-        rowData.forEach((data, i) => {
-          doc.text(data, xPos, yPosition + 3);
-          xPos += colWidths[i];
-        });
-        yPosition += 8;
-      });
-
-      // Totals row with special formatting
-      yPosition += 5;
-      addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, primaryBlue);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(255, 255, 255);
-      
-      const totalSize = databases.reduce((sum, db) => sum + db.sizeGb, 0);
-      const totalMigrationCost = databases.reduce((sum, db) => sum + db.migrationCost, 0);
-      const totalMonthlyCost = databases.reduce((sum, db) => sum + db.monthlyCost, 0);
-      const totalMigrationHours = databases.reduce((sum, db) => sum + db.migrationHours, 0);
-
-      xPos = margin + 2;
-      const totalsData = [
-        'TOTAL',
-        '',
-        totalSize.toString(),
-        '',
-        totalMigrationHours.toString(),
-        `R$ ${totalMigrationCost.toFixed(2)}`,
-        totalMonthlyCost.toFixed(2)
-      ];
-
-      totalsData.forEach((data, i) => {
-        doc.text(data, xPos, yPosition + 5);
-        xPos += colWidths[i];
-      });
-      yPosition += 20;
     }
+
+    // Alternating row colors
+    if (index % 2 === 0) {
+      addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 8, lightBlue);
+    }
+
+    xPos = margin + 2;
+    const rowData = [
+      (index + 1).toString(),
+      db.name.length > 35 ? db.name.substring(0, 32) + '...' : db.name,
+      db.sizeGb.toString()
+    ];
+
+    rowData.forEach((data, i) => {
+      doc.text(data, xPos, yPosition + 3);
+      xPos += colWidths[i];
+    });
+    yPosition += 8;
+  });
+
+  // Totals row with special formatting
+  yPosition += 5;
+  addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, primaryBlue);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+
+  const totalSize = databases.reduce((sum, db) => sum + db.sizeGb, 0);
+
+  xPos = margin + 2;
+  const totalsData = [
+    'TOTAL',
+    `${databases.length} databases`,
+    totalSize.toString()
+  ];
+
+  totalsData.forEach((data, i) => {
+    doc.text(data, xPos, yPosition + 5);
+    xPos += colWidths[i];
+  });
+  yPosition += 20;
+}
+
 
     // Activities section
     if (yPosition > pageHeight - 50) {
@@ -299,13 +291,13 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
         // Team, status, and time in colored box
         addColoredRect(pageWidth - 70, yPosition - 8, 50, 6, lightBlue);
         doc.setFontSize(7);
-        doc.text(`${activity.team} | ${activity.status} | ${activity.timeEstimate}`, pageWidth - 68, yPosition - 5);
-        
+        //doc.text(`${activity.team} | ${activity.status} | ${activity.timeEstimate}`, pageWidth - 68, yPosition - 5);
+        doc.text(`${activity.team}`, pageWidth - 68, yPosition - 5);
         yPosition += 5;
       });
     }
 
-    // Summary section with simple text (no emojis)
+    // Summary section (only time-related info)
     yPosition += 15;
     if (yPosition > pageHeight - 40) {
       doc.addPage();
@@ -317,26 +309,27 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
     doc.text('RESUMO EXECUTIVO', margin + 5, yPosition + 6);
-    yPosition += 15;
+    yPosition += 10;
 
     if (databases.length > 0) {
       const totalSize = databases.reduce((sum, db) => sum + db.sizeGb, 0);
-      const totalMigrationCost = databases.reduce((sum, db) => sum + db.migrationCost, 0);
-      const totalMonthlyCost = databases.reduce((sum, db) => sum + db.monthlyCost, 0);
+      const totalMigrationHours = databases.reduce((sum, db) => sum + db.migrationHours, 0);
+      const totalMinutes = activities.reduce((total, activity) => {
+        return total + parseTimeStr(activity.timeEstimate);
+      }, 0);
+      const totalActivityHours = minutesToHHMM(totalMinutes);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
       
-      // Using simple bullet points instead of emojis
       const summaryItems = [
         `• Total de bancos de dados: ${databases.length}`,
         `• Tamanho total agregado: ${totalSize} GB`,
-        `• Custo total de migração (DBA): R$ ${totalMigrationCost.toFixed(2)}`,
-        `• Custo mensal estimado (${config.environment}): ${totalMonthlyCost.toFixed(2)}`,
+        `• Tempo estimado para atividades: ${totalActivityHours}`,
         `• Ambiente de destino: ${config.environment}`
+		
       ];
-
       summaryItems.forEach((item, index) => {
         if (index % 2 === 0) {
           addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 8, lightBlue);
@@ -352,7 +345,7 @@ export function PDFGenerator({ config, databases, activities, diskSegregation, d
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(255, 255, 255);
-    doc.text(`Relatório gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, margin, footerY);
+    doc.text(`Relatório gerado em ${new Date().toLocaleDateString('pt-BR')} as ${new Date().toLocaleTimeString('pt-BR')}`, margin, footerY);
     doc.text('DBAOnline - Estimativa de Migração SQL Server', pageWidth - margin, footerY, { align: 'right' });
 
     // Save the PDF
