@@ -187,7 +187,13 @@ export function PDFGenerator({
     yPosition += 15;
 
     if (databases.length > 0) {
-      addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, darkBlue);
+      addColoredRect(
+        margin,
+        yPosition - 2,
+        pageWidth - 2 * margin,
+        10,
+        darkBlue
+      );
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
@@ -257,7 +263,13 @@ export function PDFGenerator({
 
       // Totais
       yPosition += 5;
-      addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, primaryBlue);
+      addColoredRect(
+        margin,
+        yPosition - 2,
+        pageWidth - 2 * margin,
+        10,
+        primaryBlue
+      );
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
 
@@ -296,7 +308,7 @@ export function PDFGenerator({
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(darkBlue[0], darkBlue[1], darkBlue[2]);
-      // Se quiser algum título genérico:
+      // Opcional: algum título genérico
       // doc.text('RESUMO DAS ATIVIDADES', margin + 5, yPosition + 8);
       yPosition += 20;
 
@@ -322,16 +334,16 @@ export function PDFGenerator({
           activity.description,
           margin + 12,
           yPosition + 4,
-          pageWidth - margin - 80,
+          pageWidth - margin - 40, // mais espaço já que não tem tempo
           8
         );
 
-        // Time box da atividade
-        addColoredRect(pageWidth - 70, yPosition - 8, 50, 6, lightBlue);
+        // Caixa à direita só com equipe e status (sem tempo)
+        addColoredRect(pageWidth - 60, yPosition - 8, 50, 6, lightBlue);
         doc.setFontSize(7);
         doc.text(
-          `${activity.team} | ${activity.status} | ${activity.timeEstimate}`,
-          pageWidth - 68,
+          `${activity.team} | ${activity.status}`,
+          pageWidth - 58,
           yPosition - 5
         );
 
@@ -359,7 +371,8 @@ export function PDFGenerator({
         (sum, db) => sum + db.migrationHours,
         0
       );
-      // Mantida a lógica caso use em outro lugar, mas não exibimos o total de tempo
+
+      // Mantido cálculo se quiser usar depois, mas nada de tempo é exibido
       const totalMinutes = activities.reduce((total, activity) => {
         return total + parseTimeStr(activity.timeEstimate);
       }, 0);
