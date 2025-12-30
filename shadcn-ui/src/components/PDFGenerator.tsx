@@ -303,12 +303,12 @@ export function PDFGenerator({
     yPosition += 15;
 
     if (activities.length > 0) {
-      // Caixa de resumo SEM tempo total
+      // Caixa de resumo (sem tempo)
       addColoredRect(margin, yPosition, pageWidth - 2 * margin, 12, lightBlue);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(darkBlue[0], darkBlue[1], darkBlue[2]);
-      // Opcional: algum título genérico
+      // Opcional: título
       // doc.text('RESUMO DAS ATIVIDADES', margin + 5, yPosition + 8);
       yPosition += 20;
 
@@ -321,31 +321,25 @@ export function PDFGenerator({
           yPosition = margin;
         }
 
-        // Número da atividade
+        // Número da atividade (círculo azul)
         addColoredRect(margin, yPosition - 1, 8, 8, primaryBlue);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(255, 255, 255);
         doc.text((index + 1).toString(), margin + 2, yPosition + 4);
 
-        // Descrição
+        // Descrição completa ocupando a largura restante
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(0, 0, 0);
         yPosition = addText(
           activity.description,
           margin + 12,
           yPosition + 4,
-          pageWidth - margin - 40, // mais espaço já que não tem tempo
+          pageWidth - margin - 20, // usa quase a página inteira
           8
         );
 
-        // Caixa à direita só com equipe e status (sem tempo)
-        addColoredRect(pageWidth - 60, yPosition - 8, 50, 6, lightBlue);
-        doc.setFontSize(7);
-        doc.text(
-          `${activity.team} | ${activity.status}`,
-          pageWidth - 58,
-          yPosition - 5
-        );
+        // REMOVIDO: faixa azul à direita com team | status | tempo
+        // Não há mais caixa nem texto lateral, evitando estourar a largura
 
         yPosition += 5;
       });
@@ -372,7 +366,6 @@ export function PDFGenerator({
         0
       );
 
-      // Mantido cálculo se quiser usar depois, mas nada de tempo é exibido
       const totalMinutes = activities.reduce((total, activity) => {
         return total + parseTimeStr(activity.timeEstimate);
       }, 0);
@@ -385,8 +378,7 @@ export function PDFGenerator({
       const summaryItems = [
         `• Total de bancos de dados: ${databases.length}`,
         `• Tamanho total agregado: ${totalSize} GB`,
-        // Linha de tempo total removida para não aparecer
-        // `• Tempo estimado para atividades: ${totalActivityHours}`,
+        // `• Tempo estimado para atividades: ${totalActivityHours}`, // ainda oculto
         `• Ambiente de destino: ${config.environment}`,
       ];
 
