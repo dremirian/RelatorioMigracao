@@ -187,13 +187,7 @@ export function PDFGenerator({
     yPosition += 15;
 
     if (databases.length > 0) {
-      addColoredRect(
-        margin,
-        yPosition - 2,
-        pageWidth - 2 * margin,
-        10,
-        darkBlue
-      );
+      addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, darkBlue);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
@@ -263,13 +257,7 @@ export function PDFGenerator({
 
       // Totais
       yPosition += 5;
-      addColoredRect(
-        margin,
-        yPosition - 2,
-        pageWidth - 2 * margin,
-        10,
-        primaryBlue
-      );
+      addColoredRect(margin, yPosition - 2, pageWidth - 2 * margin, 10, primaryBlue);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
 
@@ -303,12 +291,12 @@ export function PDFGenerator({
     yPosition += 15;
 
     if (activities.length > 0) {
-      // Caixa de resumo (sem tempo)
+      // Caixa de resumo SEM tempo total
       addColoredRect(margin, yPosition, pageWidth - 2 * margin, 12, lightBlue);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(darkBlue[0], darkBlue[1], darkBlue[2]);
-      // Opcional: título
+      // Se quiser algum título genérico:
       // doc.text('RESUMO DAS ATIVIDADES', margin + 5, yPosition + 8);
       yPosition += 20;
 
@@ -321,25 +309,31 @@ export function PDFGenerator({
           yPosition = margin;
         }
 
-        // Número da atividade (círculo azul)
+        // Número da atividade
         addColoredRect(margin, yPosition - 1, 8, 8, primaryBlue);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(255, 255, 255);
         doc.text((index + 1).toString(), margin + 2, yPosition + 4);
 
-        // Descrição completa ocupando a largura restante
+        // Descrição
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(0, 0, 0);
         yPosition = addText(
           activity.description,
           margin + 12,
           yPosition + 4,
-          pageWidth - margin - 20, // usa quase a página inteira
+          pageWidth - margin - 80,
           8
         );
 
-        // REMOVIDO: faixa azul à direita com team | status | tempo
-        // Não há mais caixa nem texto lateral, evitando estourar a largura
+        // Time box da atividade
+        addColoredRect(pageWidth - 70, yPosition - 8, 50, 6, lightBlue);
+        doc.setFontSize(7);
+        doc.text(
+          `${activity.team} | ${activity.status} | ${activity.timeEstimate}`,
+          pageWidth - 68,
+          yPosition - 5
+        );
 
         yPosition += 5;
       });
@@ -365,7 +359,7 @@ export function PDFGenerator({
         (sum, db) => sum + db.migrationHours,
         0
       );
-
+      // Mantida a lógica caso use em outro lugar, mas não exibimos o total de tempo
       const totalMinutes = activities.reduce((total, activity) => {
         return total + parseTimeStr(activity.timeEstimate);
       }, 0);
@@ -378,7 +372,8 @@ export function PDFGenerator({
       const summaryItems = [
         `• Total de bancos de dados: ${databases.length}`,
         `• Tamanho total agregado: ${totalSize} GB`,
-        // `• Tempo estimado para atividades: ${totalActivityHours}`, // ainda oculto
+        // Linha de tempo total removida para não aparecer
+        // `• Tempo estimado para atividades: ${totalActivityHours}`,
         `• Ambiente de destino: ${config.environment}`,
       ];
 
