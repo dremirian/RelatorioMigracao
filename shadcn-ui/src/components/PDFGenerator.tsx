@@ -291,7 +291,12 @@ export function PDFGenerator({
     yPosition += 15;
 
     if (activities.length > 0) {
-      
+      // Caixa de resumo
+      addColoredRect(margin, yPosition, pageWidth - 2 * margin, 12, lightBlue);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(darkBlue[0], darkBlue[1], darkBlue[2]);
+      yPosition += 20;
 
       doc.setFontSize(8);
       doc.setTextColor(0, 0, 0);
@@ -315,16 +320,16 @@ export function PDFGenerator({
           activity.description,
           margin + 12,
           yPosition + 4,
-          pageWidth - margin - 80,
+          pageWidth - margin - 60,
           8
         );
 
-        // Time box da atividade
-        addColoredRect(pageWidth - 70, yPosition - 8, 50, 6, lightBlue);
+        // Time box SEM tempo estimado
+        addColoredRect(pageWidth - 55, yPosition - 8, 35, 6, lightBlue);
         doc.setFontSize(7);
         doc.text(
-          `${activity.team} | ${activity.status} | ${activity.timeEstimate}`,
-          pageWidth - 68,
+          `${activity.team} | ${activity.status}`,
+          pageWidth - 53,
           yPosition - 5
         );
 
@@ -352,11 +357,6 @@ export function PDFGenerator({
         (sum, db) => sum + db.migrationHours,
         0
       );
-      // Mantida a lógica caso use em outro lugar, mas não exibimos o total de tempo
-      const totalMinutes = activities.reduce((total, activity) => {
-        return total + parseTimeStr(activity.timeEstimate);
-      }, 0);
-      const totalActivityHours = minutesToHHMM(totalMinutes);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -365,8 +365,6 @@ export function PDFGenerator({
       const summaryItems = [
         `• Total de bancos de dados: ${databases.length}`,
         `• Tamanho total agregado: ${totalSize} GB`,
-        // Linha de tempo total removida para não aparecer
-        // `• Tempo estimado para atividades: ${totalActivityHours}`,
         `• Ambiente de destino: ${config.environment}`,
       ];
 
