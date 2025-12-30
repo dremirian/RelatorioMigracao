@@ -291,14 +291,7 @@ export function PDFGenerator({
     yPosition += 15;
 
     if (activities.length > 0) {
-      // Caixa de resumo SEM tempo total
-      addColoredRect(margin, yPosition, pageWidth - 2 * margin, 12, lightBlue);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(darkBlue[0], darkBlue[1], darkBlue[2]);
-      // Se quiser algum título genérico:
-      // doc.text('RESUMO DAS ATIVIDADES', margin + 5, yPosition + 8);
-      yPosition += 20;
+      
 
       doc.setFontSize(8);
       doc.setTextColor(0, 0, 0);
